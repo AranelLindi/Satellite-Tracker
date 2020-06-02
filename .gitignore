@@ -3,3 +3,16 @@
 
 # CMake
 build/
+CMakeFiles/
+cmake_install.cmake
+CMakeCache.txt
+
+
+# Binary
+SatelliteTracking
+
+# Makefile
+Makefile
+
+# SONATE TLE
+SONATE.txt
