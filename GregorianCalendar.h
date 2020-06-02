@@ -5,7 +5,7 @@
 #include <cstdint>
 
 // eigener Code
-#include "Orbitpropagation/Calendar/calendar.h"
+#include "Orbitpropagation/calendars/calendar.h"
 
 struct GregorianCalendar {
     int16_t year; // year

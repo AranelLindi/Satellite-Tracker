@@ -1,17 +1,7 @@
-// Standartbibliotheken
-#include <iostream>
-#include <fstream>
+#include "position.h" // HEADER
 
-// eigener Code
-#include "Orbitpropagation/orbitpropagation.h" // Header für Aufgabe 2: Orbitpropagation inkl. TleInterpreter
-#include "GregorianCalendar.h"
+#define INTERVAL 30 // [s] (Overloading increment-Operator!) Gibt an, um wieviele Sekunden ein GregorianCalendar-Objekt inkrementiert werden soll
 
-// Präprozessor:
-#define INTERVAL 30 // [s] (Overloading increment-Operator!)
-
-// Konstanten:
-const GregorianCalendar start = {2020, 5, 29, 14, 25, 0}; // Stellt Dummy-mäßig die Start-Zeit dar
-const GregorianCalendar ende = {2020, 5, 29, 14, 32, 0};  // Stellt zum vergleichen, die End-Zeit dar
 
 // Operator != definieren, sodass zwei GregorianCalender bequem miteinander verglichen werden können
 bool operator!=(const GregorianCalendar &gregCal1, const GregorianCalendar &gregCal2)
@@ -28,8 +18,10 @@ bool operator!=(const GregorianCalendar &gregCal1, const GregorianCalendar &greg
 GregorianCalendar &operator++(GregorianCalendar &temp, int)
 {
     // Prüfen ob eine Variable ihren Definitionsbereich überschreiten würde, dann entsprechend
-    // die höherhierarchischeren Variablen inkrementieren. Dies funktioniert bis ein neuer
-    // Tag beginnen würde, denn dort müsste dann wieder der gesamte Kalender mit eingebunden werden (Z.b Schalttagprüfungen etc)
+    // die höherhierarchischeren Variablen inkrementieren. Dies funktioniert, bis ein neuer
+    // Tag beginnen würde, denn dort müsste dann wieder der gesamte Kalender mit eingebunden werden
+    // (z.b Schalttagprüfungen etc)
+    // ACHTUNG: Es darf maximal um 60 Sekunden inkrementiert werden!
 
     if ((temp.sec + INTERVAL) >= 60)
     {
@@ -72,7 +64,7 @@ int main(void)
     SGP4Propagator prop;
     prop.setTle(sonate);
 
-    GregorianCalendar ctime = start; // Zuweisung der Startzeit zum "Iterationsobjekt"
+    GregorianCalendar ctime = START; // Zuweisung der Startzeit zum "Iterationsobjekt"
 
     ECICoordinate pos = {0, 0, 0}; // Position
     ECICoordinate vel = {0, 0, 0}; // Geschwindigkeit
@@ -87,16 +79,14 @@ int main(void)
     };
 
     int counter = 0; // zählt Datensätze
-    while ((ctime != ende))
+    while ((ctime != ENDE))
     {
         prop.calculatePositionAndVelocity(calcSeconds(), pos, vel);
 
         myfile.precision(15);
         writeECI(myfile, pos, ctime);
 
-
         ctime++; // Inkrementiert Pos um 30 Sekunden (Operator Overloading!)
-
 
         counter++; // Counter inkrementieren (Datzsätze)
     }
