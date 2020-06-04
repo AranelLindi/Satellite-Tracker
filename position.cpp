@@ -47,13 +47,13 @@ GregorianCalendar &operator++(GregorianCalendar &temp, int)
 }
 
 // Schreibt ein ECICoordinate-Objekt in den Filestream
-inline void writeECI(std::ofstream &writer, const ECICoordinate &eci, const GregorianCalendar &greg)
+inline void writeECI(std::ofstream &writer, const ECICoordinate &eci, const GregorianCalendar &greg) // -> Wenn es einen Header gibt, gehört diese inline funktion genau da rein! MACHEN!
 {
     writer << computeJDFromGregCal(greg) << "," << eci.x << "," << eci.y << "," << eci.z << '\n';
     // KEIN FLUSHEN! Ist zu teuer! Nur am Ende einmal!
 }
 
-int main(void)
+void Position::dummy(void)
 {
     // Alle TLES aus Datei abfragen:
     std::map<int, Tle> _tles = readTlesFromFile("SONATE.txt");

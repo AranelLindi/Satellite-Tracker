@@ -18,6 +18,8 @@ struct Position
     // Müssen als 'friend' definiert werden, da
     friend bool operator!=(const GregorianCalendar &gregCal1, const GregorianCalendar &gregCal2);
     friend GregorianCalendar &operator++(GregorianCalendar &temp, int);
+
+    void dummy(void); // ehemalige Main funktion: noch umbennen!
 };
 
 // Prototypen: Operatoren sind damit auch in anderen Files nutzbar

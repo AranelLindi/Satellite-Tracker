@@ -1,10 +1,7 @@
 #include "contact_time.h" // Header
 
-#include <cstdio>
-
-
-
-GregorianCalendar computeGregFromJD(double jd) {
+GregorianCalendar computeGragCalFromJD(double jd)
+{
     // Quelle: http://articles.adsabs.harvard.edu//full/1984QJRAS..25...53H/0000055.000.html
     // (Teilweise modifiziert, weil Tests nicht das richtige Ergebnis lieferten)
     // (Zusätzlich Rechnung des Fractional Parts in Uhrzeit hinzugefügt)
@@ -71,11 +68,94 @@ GregorianCalendar computeGregFromJD(double jd) {
     // ***********************************************
 }
 
+ContactTimes::ContactTimes(std::ofstream &writer)
+{
+    // Klasse verwendet übergebenen Writer um ihre Daten zu schreiben
+    // Es erfolgt keine Prüfung ob writer auf gültiges Objekt verweist!
+    this->_writer = &writer;
+}
 
+std::string ContactTimes::createDateString(const GregorianCalendar &gc)
+{
+    return std::to_string(gc.day + '.' + gc.month + '.' + gc.year + ' ' + gc.hour + ':' + gc.minute + ':' + gc.sec);
+}
+
+void ContactTimes::AOS(const GregorianCalendar &gc)
+{
+    this->begin = gc; // Zeitpunkt merken, an dem Kontakt zustanden gekommen ist
+    *(this->_writer) << createDateString(gc) << ";"
+                     << ";"; // erst bei vollständigem Datensatz (LOS) flushen!
+}
+
+void ContactTimes::LOS(const GregorianCalendar &gc)
+{
+    // Differenz zwischen AOS und LOS ausrechnen:
+    int32_t diff = gc - this->begin; // Sekunden
+
+    uint32_t minutes = diff / 60;      // Enthält Ganzzahl der Anzahl der Minuten
+    uint8_t sec = diff - minutes * 60; // Enthält Sekunden
+
+    *(this->_writer) << createDateString(gc) << ';' << minutes << ':' << sec << std::endl; // flushen
+}
+
+int64_t operator-(const GregorianCalendar &a, const GregorianCalendar &b)
+{
+    // rechnet den zeitlichen Unterschied zwischen a und b aus und gibt diesen
+    // als Sekunden zurück.
+
+    int64_t diff = 0;
+
+    diff = a.sec - b.sec +
+           (a.minute - b.minute) * 60 +
+           (a.hour - b.hour) * 24 * 60;
+
+    // TODO: Weitere Berechnungen bis einschl. Jahr einfügen! Für Aufgaben reicht es bis hier!
+}
 
 int main(void)
 {
-    double jd; //= 2459003.5;
+    const double MIN_ELEVATION_RANGE = M_PI / 36; // entspricht 5 Grad
+
+    const GregorianCalendar ENDE = {2020, 5, 30, 23, 59, 59};
+    GregorianCalendar START = {2020, 5, 30, 0, 0, 0};
+
+    double jd_start = computeJDFromGregCal(START);
+
+    bool contact = false; // false = kein Kontakt, true = Kontakt. Wird in for-Schleife gesetzt.
+
+    std::ofstream mywriter;
+
+    ContactTimes ct(mywriter);
+
+    // gc wird bei jeder Iteration um INTERVAL (Standart: 30 Sekunden) inkrementiert
+    for (GregorianCalendar gc = START; gc != ENDE; gc++)
+    {
+        if (!contact && SatelliteAvailable())
+        {
+            // In der letzten Iteration bestand noch kein Kontakt, jetzt aber schon!
+            contact = true;
+
+            ct.AOS(gc);
+        }
+        else if (contact && !SatelliteAvailable())
+        {
+            // In der letzten Iteration bestand noch Kontakt, aber jetzt nicht mehr!
+            contact = false;
+
+            ct.LOS(gc);
+        }
+    }
+
+    // Bereinigen und File schließen:
+    mywriter.flush();
+    mywriter.close();
+}
+
+/*
+    CODE UM COMPUTEGRAGCALFROMJD ZU TESTEN
+
+
+double jd; //= 2459003.5;
 
     int year;
     int month, day, hour, minute, sec;
@@ -96,4 +176,5 @@ int main(void)
 
     std::cout << '\n';
     std::cout << (int)t.day << "." << (int)t.month << "." << t.year << " " << (int)t.hour << ":" << (int)t.minute << ":" << (int)t.sec << std::endl;
-}
+
+*/
