@@ -91,11 +91,12 @@ GregorianCalendar& operator+=(GregorianCalendar& temp, const uint64_t _i) {
                             }                            
                         };
 
-    // *******************************
-    //          Algorithmus
-    // *******************************
 
-    //uint32_t delta_month = 0;
+    // **********************************
+    //          Vorberechnungen
+    // **********************************
+
+    // Vorberechnungen, die im Algorithmus gebraucht werden:
     uint8_t delta_day = 0, delta_hour = 0, delta_minute = 0, delta_sec = 0;
 
     delta_day = i / (60*60*24);
@@ -105,6 +106,11 @@ GregorianCalendar& operator+=(GregorianCalendar& temp, const uint64_t _i) {
     delta_minute = i / 60;
     if (delta_minute == 0) delta_minute++;
     delta_sec = i;
+
+
+    // *******************************
+    //          Algorithmus
+    // *******************************
 
     if (temp.sec + i >= 60) {
         // Es muss die Minute um mindestens 1 erhöht werden!
@@ -129,39 +135,24 @@ GregorianCalendar& operator+=(GregorianCalendar& temp, const uint64_t _i) {
                         i = _x;
                     } else {
                         // Jahr muss nicht erhöht werden, nur Monat erhöhen, aber nicht über 12 (also Dezember):
-                        //uint32_t dd = i / (60*60*24); // i in Tagen - Intervall: [0 bzw. 1; theoretisch offen]
-                        //if (dd == 0) dd++;
-                        //temp.month = getMonth(dd);
                         temp.month = getMonth(delta_day);
                     }
                     // Tag erhöht sich über letzten Tag des Monats, neu berechnen:
-                    //uint32_t dd = i / (60*60*24); // i in Tagen - Intervall: [0 bzw. 1; theoretisch offen]
-                    //if (dd == 0) dd++;
-                    //temp.day = getDayInMonth(dd);
                     temp.day = getDayInMonth(delta_day);
                 } else {
                     // Monat muss nicht erhöht werden, nur Tage erhöhen, aber nicht über Ende des Monats:
-                    //uint8_t dd = i /(60*60*24); // Intervall dd: [0 bzw. 1; MAXDAYINMONTH] (max. 31)
-                    //if (dd == 0) dd++;
-                    //temp.day += dd; // sollte stimmen!
                     temp.day += delta_day;
                 } 
                 // Stunden erhöhen sich über/auf 24, neu berechnen:
                 temp.hour = (temp.hour + (i / (60*60))) % 24; // stimmt! Stunde berechnen
             } else {       
                 // Tag muss nicht erhöht werden, nur Stunden erhöhen, aber nicht über 24
-                //uint8_t dh = i/(60*60); // Intervall dh: [0 bzw. 1; 24)
-                //if (dh == 0) dh++;
-                //temp.hour += dh; // sollte stimmen!
                 temp.hour += delta_hour;
             }
             // Minuten erhöhen sich über/auf 60, neu berechnen:
             temp.minute = (temp.minute + (i/60)) % 60; // stimmt! Minute berechnen
         } else {
             // Stunde muss nicht erhöht werden, nur Minuten und Sekunden / Minuten bleiben unter 60!:
-            //uint8_t dm = i/60; // Intervall dm: [0 bzw. 1; 60)
-            //if (dm == 0) dm++; // mindestens um eine Minute inkrementieren. Wurde z.b. nur eine Sekunde hinzuaddiert, würde bei 1/60, 0 Minuten addiert werden.
-            //temp.minute += dm; // stimmt!
             temp.minute += delta_minute;
         }
         // Sekunden erhöhen sich über/auf 60, neu berechnen:
@@ -171,7 +162,7 @@ GregorianCalendar& operator+=(GregorianCalendar& temp, const uint64_t _i) {
         temp.sec += i; // stimmt!
     }
 
-    std::cout << (int)temp.day << "." << (int)temp.month << "." << (int)temp.year << " " << (int)temp.hour << ":" << (int)temp.minute << ":" << (int)temp.sec << '\n';
+    //std::cout << (int)temp.day << "." << (int)temp.month << "." << (int)temp.year << " " << (int)temp.hour << ":" << (int)temp.minute << ":" << (int)temp.sec << '\n';
     return temp;
 }
 
