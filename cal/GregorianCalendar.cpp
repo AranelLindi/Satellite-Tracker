@@ -118,9 +118,9 @@ GregorianCalendar& operator+=(GregorianCalendar& temp, const uint64_t _i) {
             // Es muss weiter die Stunde um mindestens 1 erhöht werden!
             if (temp.hour + delta_hour >= 24) {
                 // Es muss der Tag um mindestens 1 erhöht werden!
-                if (temp.day + delta_day >= getNumberOfDaysInMonth(temp.year, temp.month)) {
+                if (temp.day + delta_day > getNumberOfDaysInMonth(temp.year, temp.month)) { // HIER GEÄNDERT VON >= IN >
                     // Es muss weiter der Monat um mindestens 1 erhöht werden!
-                    if (temp.month + getMonth(delta_day) >= 12) {
+                    if (temp.month + getMonth(delta_day) > 12) { // HIER GEÄNDERT VON >= IN >
                         // Es muss weiter das Jahr um mindestens 1 erhöht werden!
                         temp.year++;
 
@@ -188,18 +188,15 @@ GregorianCalendar& operator++(GregorianCalendar& temp, int) {
     //          Algorithmus
     // *******************************
 
-    // Änderungen:
-    // == zu >= geändert
-
     if (temp.sec +1 == 60) {
         // Minute wird inkrementiert
         if(temp.minute +1 == 60) {
             // Stunde wird inkrementiert
             if (temp.hour +1 == 24) {
                 // Tag wird inkrementiert
-                if (temp.day +1 == getNumberOfDaysInMonth(temp.year, temp.month)) {
+                if (temp.day +1 > getNumberOfDaysInMonth(temp.year, temp.month)) { // HIER: == IN > GEÄNDERT!
                     // Monat wird inkrementiert
-                    if (temp.month +1 == 12) {
+                    if (temp.month +1 > 12) { // HIER: == IN > GEÄNDERT!
                         // Jahr wird inkrementiert
                         temp.year++;
                         temp.month = 1;
