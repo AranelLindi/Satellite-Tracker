@@ -1,7 +1,7 @@
 // Standartbibliotheken
 
 // eigener Code
-#include "Orbitpropagation/coordinates/geocoordinates.h"
+#include "../Orbitpropagation/coordinates/geocoordinates.h"
 
 struct SEZCoordinate {
     double rS; // Entfernung in Südrichtung [km]

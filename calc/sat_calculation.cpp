@@ -3,7 +3,7 @@
 SEZCoordinate transformECIToSEZ(const ECICoordinate &rObsSatz, const GeodeticCoordinate &obs, double jd)
 {
     double r_S = 0, r_E = 0, r_Z = 0;
-    double gmst = Calendar::computeGMST(jd);
+    double gmst = Calendar::computeGMST(jd);// + obs.latitude;
 
     // Aus Vorlesung RFBA_4, Folie 7:
     // Zur Transformation in das Horizontsystem muss der Vektor um den
@@ -41,7 +41,7 @@ ECICoordinate convertGeodeticToECI(const GeodeticCoordinate &geodCoord, double j
     const double f = 1 / 298.257223563; // Quelle: https://www.unoosa.org/pdf/icg/2012/template/WGS_84.pdf
 
     // Sternzeit am Beobachtungsort mittels JD:
-    const double gmst = Calendar::computeGMST(jd);
+    const double gmst = Calendar::computeGMST(jd);// + geodCoord.latitude; // stimmt das + lati
 
     // Breite:
     double phi = geodCoord.latitude; // Hilfsvariable
