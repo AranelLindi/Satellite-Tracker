@@ -10,11 +10,13 @@ Stellt einen Container für ein gregorianisches Datum inklusive Uhrzeit zur Verf
 ## **contact/** contact_time.h/cpp ##
 Berechnet Kontaktzeitpunkte/-verluste eines Satelliten über einen gegebenen Zeitraum und printet die Ergebnisse in eine Textdatei.
 
-### **main_calculation.cpp** ###
+----------------------------------------------------------
+
+### **main_calculation.cpp**###
 Beispielhafte Implementierung der Berechnung von sat_calculation.
 
-### **main_contact.cpp** ###
+### **main_contact.cpp**###
 Beispielhafte Implementierung der Bestimmung von Kontaktzeiträumen via contact_time.
 
-### **main_position.cpp** ###
+### **main_position.cpp**###
 Berechnet beispielhaft die Koordinaten der Flugbahn eines Satelliten.
