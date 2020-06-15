@@ -1,9 +1,8 @@
 #include "sat_calculation.h"
 
-SEZCoordinate transformECIToSEZ(const ECICoordinate &rObsSatz, const GeodeticCoordinate &obs, double jd)
+SEZCoordinate transformECIToSEZ(const ECICoordinate &rObsSat, const GeodeticCoordinate &obs, double jd)
 {
-    double r_S = 0, r_E = 0, r_Z = 0;
-    double gmst = Calendar::computeGMST(jd);// + obs.latitude;
+    /*const double gmst = Calendar::computeGMST(jd) + obs.longitude; // Sternzeit des Beobachters hängt ab vom Längengrad!
 
     // Aus Vorlesung RFBA_4, Folie 7:
     // Zur Transformation in das Horizontsystem muss der Vektor um den
@@ -11,18 +10,18 @@ SEZCoordinate transformECIToSEZ(const ECICoordinate &rObsSatz, const GeodeticCoo
     // und um den Winkel φ (Breitengrad des Beobachters) gedreht werden.
 
     // Süd-Richtung:
-    r_S = sin(obs.latitude) * cos(gmst) * rObsSatz.x +
-          sin(obs.latitude) * sin(gmst) * rObsSatz.y -
-          cos(obs.latitude) * rObsSatz.z;
+    const double r_S = sin(obs.latitude) * cos(gmst) * rObsSat.x +
+                       sin(obs.latitude) * sin(gmst) * rObsSat.y -
+                       cos(obs.latitude) * rObsSat.z;
 
     // Ost-Richtung:
-    r_E = -sin(gmst) * rObsSatz.x +
-          cos(gmst) * rObsSatz.y;
+    const double r_E = -sin(gmst) * rObsSat.x +
+                       cos(gmst) * rObsSat.y;
 
     // Zenit-Richtung:
-    r_Z = cos(obs.latitude) * cos(gmst) * rObsSatz.x +
-          cos(obs.latitude) * sin(gmst) * rObsSatz.y +
-          sin(obs.latitude) * rObsSatz.z;
+    const double r_Z = cos(obs.latitude) * cos(gmst) * rObsSat.x +
+                       cos(obs.latitude) * sin(gmst) * rObsSat.y +
+                       sin(obs.latitude) * rObsSat.z;
 
     SEZCoordinate sz;
 
@@ -30,41 +29,76 @@ SEZCoordinate transformECIToSEZ(const ECICoordinate &rObsSatz, const GeodeticCoo
     sz.rS = r_S;
     sz.rZ = r_Z;
 
-    return sz;
+    return sz;*/
+
+    double sinPhi = sin(obs.latitude);
+	double cosPhi = cos(obs.latitude);
+
+	double gmst = Calendar::computeGMST(jd);
+	double sinTheta = sin(obs.longitude + gmst);
+	double cosTheta = cos(obs.longitude + gmst);
+
+	SEZCoordinate sezCoord;
+	sezCoord.rS = sinPhi * cosTheta * rObsSat.x + sinPhi * sinTheta * rObsSat.y - cosPhi * rObsSat.z;
+	sezCoord.rE = -sinTheta * rObsSat.x + cosTheta * rObsSat.y;
+	sezCoord.rZ = cosPhi * cosTheta * rObsSat.x + cosPhi * sinTheta * rObsSat.y + sinPhi * rObsSat.z;
+
+	return sezCoord;
 }
 
 ECICoordinate convertGeodeticToECI(const GeodeticCoordinate &geodCoord, double jd)
 {
-    // große Halbachse:
-    const double a = 6378137.0 / 1000;  // [km]
+    /*// große Halbachse:
+    static const float a = 6378137.0 / 1000; // [km]
     // Abplattung:
-    const double f = 1 / 298.257223563; // Quelle: https://www.unoosa.org/pdf/icg/2012/template/WGS_84.pdf
+    static const float f = 1 / 298.257223563; // Quelle: https://www.unoosa.org/pdf/icg/2012/template/WGS_84.pdf
 
     // Sternzeit am Beobachtungsort mittels JD:
-    const double gmst = Calendar::computeGMST(jd);// + geodCoord.latitude; // stimmt das + lati
+    const double theta = Calendar::computeGMST(jd) + geodCoord.longitude; // Sternzeit Bodenstation hängt ab vom Längengrad der Bodenstation!
 
     // Breite:
-    double phi = geodCoord.latitude; // Hilfsvariable
+    const double phi = geodCoord.latitude; // Hilfsvariable
 
     // Lambda: Potenz 2
-    auto sq = [](double i) { return i * i; };
+    const auto sq = [](double i) -> double { return (i * i); };
 
-    double C = 1 / (sqrt(1 + f * (f - 2) * sq(sin(phi))));
-    double S = sq(1 - f) * C;
+    const double C = 1 / (sqrt(1 + f * (f - 2) * sq(sin(phi))));
+    const double S = sq(1 - f) * C;
 
     // neues ECICoordinate Objekt anlegen und Member befüllen:
     // (ECI Koordinaten des Beobachters auf Ellipsoid)
     ECICoordinate eci;
-    eci.x = a * C * cos(phi) * cos(gmst);
-    eci.y = a * C * cos(phi) * sin(gmst);
-    eci.z = a * S * sin(phi);
+    eci.x = (a * C + geodCoord.height) * cos(phi) * cos(theta);
+    eci.y = (a * C + geodCoord.height) * cos(phi) * sin(theta);
+    eci.z = (a * S + geodCoord.height) * sin(phi);
 
-    return eci;
+    return eci;*/
+
+    static const double Re = 6378.137;
+	static const double f = 1.0 / 298.26;
+	
+	double sinPhi = sin(geodCoord.latitude);
+	double cosPhi = cos(geodCoord.latitude);
+
+	double gmst = Calendar::computeGMST(jd);
+	double sinTheta = sin(geodCoord.longitude + gmst);
+	double cosTheta = cos(geodCoord.longitude + gmst);
+
+	double C = 1 / sqrt(1 + f * (f - 2) * sinPhi * sinPhi);
+	double S = (1 - f) * (1 - f) * C;
+
+	// Include height of geodetic coordinate into equations from RFBA_4.pdf, S.9
+	ECICoordinate coord;
+	coord.x = (Re * C + geodCoord.height) * cosPhi * cosTheta;
+	coord.y = (Re * C + geodCoord.height) * cosPhi * sinTheta;
+	coord.z = (Re * S + geodCoord.height) * sinPhi;
+
+	return coord;
 }
 
 double computeSlantRange(const SEZCoordinate &sezCoord)
 {
-    const auto sq = [](double i) -> double { return i * i; };
+    const auto sq = [](double i) -> double { return (i * i); };
 
     return sqrt(sq(sezCoord.rS) + sq(sezCoord.rE) + sq(sezCoord.rZ));
 }
@@ -74,22 +108,14 @@ double computeAzimuth(const SEZCoordinate &sezCoord)
     // von Norden im Uhrzeigersinn positiv, d.h. im Norden beträgt
     // der Azimut 0 Grad. Wertebereich liegt im Intervall [0, 2pi)
 
-    double azimuth_deg = 0, azimuth_rad = 0;
+    //if (sezCoord.rS == 0)
+    //    return 0;                                   // eventuelle Division durch 0 abfangen
+    double azimuth = atan2(sezCoord.rE, -sezCoord.rS); // arctan(x)
 
-    if (sezCoord.rS == 0)
-        return 0;                                   // eventuelle Division durch 0 abfangen
-    azimuth_deg = atan(-sezCoord.rE / sezCoord.rS); // arctan(x)
+    if (azimuth < 0)
+        azimuth += (2 * M_PI);
 
-    // Winkel auf das entsprechende Intervall abbilden:
-    azimuth_rad = M_PI / 180 * azimuth_deg;
-
-    // reicht da eine Iteration?
-    if (azimuth_rad >= M_PI)
-        azimuth_rad -= 2 * M_PI;
-    if (azimuth_rad < 0)
-        azimuth_rad += 2 * M_PI;
-
-    return azimuth_rad;
+    return azimuth;
 }
 
 double computeElevation(const SEZCoordinate &sezCoord)
@@ -97,23 +123,6 @@ double computeElevation(const SEZCoordinate &sezCoord)
     // Elevationswinkel von 0 Grad entspricht Horizont und Winkel von 90 Grad
     // dem Zenit. Wertebereich liegt im Intervall [-pi/2, pi/2]
 
-    double elevation_deg = 0, elevation_rad = 0;
-    double r = 0; // Schrägentfernung Satellit
-
-    // Schrägentfernung Satellit
-    r = computeSlantRange(sezCoord);
-
-    // Elevationswinkel in Grad berechnen:
-    elevation_deg = asin(sezCoord.rZ / r); // r > 0, arcsin(x)
-
-    // Winkel auf das entsprechende Intervall abbilden:
-    elevation_rad = M_PI / 180 * elevation_deg;
-
-    // reicht da eine Iteration?
-    if (elevation_rad >= M_PI / 2)
-        elevation_rad -= M_PI;
-    if (elevation_rad <= -M_PI / 2)
-        elevation_rad += M_PI;
-
-    return elevation_rad;
+    // Elevationswinkel in [rad] berechnen:
+    return asin(sezCoord.rZ / computeSlantRange(sezCoord)); // r > 0, arcsin(x)
 }

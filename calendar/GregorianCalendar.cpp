@@ -284,7 +284,7 @@ bool operator<(const GregorianCalendar& gregCal1, const GregorianCalendar& gregC
 }
 
 bool operator>(const GregorianCalendar& gregCal1, const GregorianCalendar& gregCal2) {
-    // Definition: Ein Datum ist größer relativ zu einem Anderen, wenn es einen späteren Zeitraum repräsentiert.
+    // Definition: Ein Datum ist größer relativ zu einem anderen, wenn es einen späteren Zeitpunkt repräsentiert.
 
     // HILFSVARIABLEN
 
@@ -318,7 +318,7 @@ bool operator>(const GregorianCalendar& gregCal1, const GregorianCalendar& gregC
 }
 
 bool operator<=(const GregorianCalendar& gregCal1, const GregorianCalendar& gregCal2) {
-    // Definition: Ein Datum ist kleiner gleich relativ zu einem Anderen, wenn es einen früheren oder gleichen Zeitraum repräsentiert.
+    // Definition: Ein Datum ist kleiner gleich relativ zu einem anderen, wenn es einen früheren oder gleichen Zeitpunkt repräsentiert.
 
     // HILFSVARIABLEN
 

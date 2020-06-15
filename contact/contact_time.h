@@ -2,16 +2,16 @@
 #include <cstdint>  // int-Variablen
 #include <fstream>  // IO
 #include <iostream> // IO
-#include <ctime> // seconds since epoch
-//#include <cstdio>  // Konsolenausgabe
+#include <iomanip>  // verbesserte Konsolenausgabe
 
 // eigener Code
-#include "../cal/GregorianCalendar.h"                 // GregorianCalendar-Objekt
+#include "../calendar/GregorianCalendar.h"        // GregorianCalendar-Objekt & Operator Overloading
 #include "../Orbitpropagation/orbitpropagation.h" // Calendar-Funktionen
-#include "../calc/sat_calculation.h"                   // (Aufgabe 3.1)
-#include "../pos/position.h"                          // Operator-Overloading für GregorianCalendar
+#include "../calc/sat_calculation.h"              // (Aufgabe 3.1)
 
-// Stellt ein Objekt dar, dass den Status der Verbindung zu einem Satelliten protokolliert.
+/**
+ * Protokolliert aufgebaute bzw. verlorene Verbindungen zu einem Satelliten.
+ */
 class ContactTimes
 {
     GregorianCalendar begin; // Speichert Zeitpunkt von AOS (für Berechnung von Duration)
@@ -20,22 +20,31 @@ class ContactTimes
 public:
     ContactTimes(std::ofstream &writer);
 
-    // Zeitpunkt, bei dem der Kontakt mit Satelliten beginnt.
+    /**
+     * Markiert den Zeitpunkt einer aufgebauten Verbindung zu einem Satelliten.
+     * @param  {GregorianCalendar} gc : Zeitpunkt Kontakt
+     */
     void AOS(const GregorianCalendar &gc);
-    // Zeitpunkt, bei der Kontakt mit Satelliten endet.
+
+    /**
+     * Markiert den Zeitpunkt einer verloreren Verbindung zu einem Satelliten.
+     * @param  {GregorianCalendar} gc : Zeitpunkt Verlust
+     */
     void LOS(const GregorianCalendar &gc);
 
     // Operator überladen um zwei GregorianCalendar-Objekte voneinander subtrahieren zu können.
     // Liefert die Anzahl Sekunden Differenz der beiden Objekte
-
 };
 
-int64_t operator-(const GregorianCalendar &a, const GregorianCalendar &b);
-
-// Berechnet das Datum nach dem gregorianischen Kalender in Abhängigkeit einer Julian Day Fraction.
-GregorianCalendar computeGragCalFromJD(double jd);
-
-// Prüft anhand mehrerer Bedingungen, ob der Satellit Funkkontakt zur Bodenstation haben müsste
-bool SatelliteAvailable(double ele);
-
-void DetermineContactTimes(void);
+/**
+ * Berechnet Kontaktzeiten eines Satelliten im Low Earth Orbit zu einem Beobachter (Bodenstation).
+ * @param  {std::string} filename            : Ausgabedatei
+ * @param  {Tle} tle                         : TLE Berechnungsgrundlage
+ * @param  {GregorianCalendar} start         : Startzeitpunkt Berechnungen
+ * @param  {GregorianCalendar} ende          : Endzeitpunkt Berechnungen
+ * @param  {float} observer_heigth           : Höhe Beobachter (Bodenstation)
+ * @param  {float} observer_latitude_degree  : Breitengrad Beobachter (Bodenstation)
+ * @param  {float} observer_longitude_degree : Längengrad Beobachter (Bodenstation)
+ * @param  {bool(*)(double)} condition       : Funktionszeiger auf Funktion die Kontaktbedingung prüft (seperat implementieren!)
+ */
+void DetermineContactTimes(const std::string &filename, Tle &tle, const GregorianCalendar &start, const GregorianCalendar &ende, float observer_heigth, float observer_latitude_degree, float observer_longitude_degree, bool (*condition)(double));

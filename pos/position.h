@@ -7,7 +7,7 @@
 
 // eigener Code
 #include "../Orbitpropagation/orbitpropagation.h" // für SGP4-Berechnungen
-#include "../cal/GregorianCalendar.h"                 // Calendar-Container
+#include "../calendar/GregorianCalendar.h"                 // Calendar-Container
 
 struct Position
 {

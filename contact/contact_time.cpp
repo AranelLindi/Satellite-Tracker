@@ -1,5 +1,7 @@
 #include "contact_time.h" // Header
 
+#define __abstand__ std::setfill('0') << std::setw(2)
+
 GregorianCalendar computeGragCalFromJD(double jd)
 {
     // Quelle: http://articles.adsabs.harvard.edu//full/1984QJRAS..25...53H/0000055.000.html
@@ -73,15 +75,16 @@ ContactTimes::ContactTimes(std::ofstream &writer)
     // Klasse verwendet übergebenen Writer um ihre Daten zu schreiben
     // Es erfolgt keine Prüfung ob writer auf gültiges Objekt verweist!
     this->_writer = &writer;
-    writer << "Start" << std::endl;
+    // \033[1m = Fettschrfit auf Ubuntu Konsole
+    // \022[31m = Schriftfarbe Rot
+    // \033[0m = Beendet Formatierungen
+    writer << "\033[1m\033[31mAOS (Kontaktaufnahme)\tLOS (Kontaktverlust)\tDUR (Dauer)\033[0m" << std::endl;
 }
-
-
 
 void ContactTimes::AOS(const GregorianCalendar &gc)
 {
-    this->begin = gc;                                // Zeitpunkt merken, an dem Kontakt zustanden gekommen ist
-    *(this->_writer) << (int)gc.day << "." << (int)gc.month << "." << (int)gc.year << " " << (int)gc.hour << ":" << (int)gc.minute << ":" << (int)gc.sec << ";"; // erst bei vollständigem Datensatz (LOS) flushen!
+    this->begin = gc;                                                                                                                                                                                                                                       // Zeitpunkt merken, an dem Kontakt zustanden gekommen ist
+    *(this->_writer) << std::fixed << __abstand__ << (int)gc.day << "." << __abstand__ << (int)gc.month << "." << (int)gc.year << " " << __abstand__ << (int)gc.hour << ":" << __abstand__ << (int)gc.minute << ":" << __abstand__ << (int)gc.sec << " ; "; // erst bei vollständigem Datensatz (LOS) flushen!
 }
 
 void ContactTimes::LOS(const GregorianCalendar &gc)
@@ -92,114 +95,79 @@ void ContactTimes::LOS(const GregorianCalendar &gc)
     uint32_t minutes = diff / 60;      // Enthält Ganzzahl der Anzahl der Minuten
     uint8_t sec = diff - minutes * 60; // Enthält Sekunden
 
-    *(this->_writer) << (int)gc.day << "." << (int)gc.month << "." << (int)gc.year << " " << (int)gc.hour << ":" << (int)gc.minute << ":" << (int)gc.sec << std::endl; // flushen
+    *(this->_writer) << std::fixed;
+    *(this->_writer) << __abstand__ << (int)gc.day << "." << __abstand__ << (int)gc.month << "." << (int)gc.year << " " << __abstand__ << (int)gc.hour << ":" << __abstand__ << (int)gc.minute << ":" << __abstand__ << (int)gc.sec;
+    *(this->_writer) << " ; " << minutes << ":" << (int)sec << std::endl;
 }
 
-int64_t operator-(const GregorianCalendar &a, const GregorianCalendar &b)
+void DetermineContactTimes(const std::string &filename, Tle &tle, const GregorianCalendar &start, const GregorianCalendar &ende, float observer_heigth, float observer_latitude_degree, float observer_longitude_degree, bool (*condition)(double)) // Bedigungen aka Parameter noch nicht ganz geklärt, deswegen hier 'void'. Sobald geklärt, hier so ersetzen, dass Funktion theoretisch auch für andere Satelliten ausgeführt werden könnte.
 {
-    // rechnet den zeitlichen Unterschied zwischen a und b aus und gibt diesen
-    // als Sekunden zurück.
+    SGP4Propagator prop;
+    prop.setTle(tle);
 
-    int64_t diff = 0;
+    // Objekte für Koordinatenberechnungen/-transformationen:
+    SEZCoordinate sezCoord;
+    ECICoordinate satPos, satVel, obsPosECI, rObsSat;
+    GeodeticCoordinate obsPosGeod;                             // Beobachter
+    obsPosGeod.height = observer_heigth;                       // 0.275
+    obsPosGeod.latitude = deg2rad(observer_latitude_degree);   // 49.78
+    obsPosGeod.longitude = deg2rad(observer_longitude_degree); // 9.97
 
-    diff = a.sec - b.sec +
-           (a.minute - b.minute) * 60 +
-           (a.hour - b.hour) * 24 * 60;
+    double jdEpoch = Calendar::computeJD(tle.getYear(), tle.getDayFraction()); // TLE Epoch berechnen
 
-    // TODO: Weitere Berechnungen bis einschl. Jahr einfügen! Für Aufgaben reicht es bis hier!
-    return diff;
-}
+    // IO-Writer:
+    std::ofstream mywriter(filename);
+    // Ausgabe Kontaktzeiten:
+    ContactTimes ct(mywriter); //
 
-bool SatelliteAvailable(double ele) { 
-    const double MIN_ELEVATION_RANGE = M_PI / 36; // entspricht 5 Grad in rad
-    return (fabs(ele) <= MIN_ELEVATION_RANGE);}
-
-void DetermineContactTimes(void) // Bedigungen aka Parameter noch nicht ganz geklärt, deswegen hier 'void'. Sobald geklärt, hier so ersetzen, dass Funktion theoretisch auch für andere Satelliten ausgeführt werden könnte.
-{
-    const GregorianCalendar ENDE = {2020, 5, 31, 0, 0, 0};
-    const GregorianCalendar START = {2020, 5, 30, 0, 0, 0};
-
-    
-
+    // Speichert ob aktuell ein Kontakt mit Satelliten vorliegt:
     bool contact = false; // false = kein Kontakt, true = Kontakt. Wird in for-Schleife gesetzt.
 
-    std::ofstream mywriter("Ausgabe33.txt");
-
-    ContactTimes ct(mywriter);
-
-
-    auto _tle = readTlesFromFile("SONATE.txt");
-    SGP4Propagator prop;
-    auto sonate = _tle.at(44400);
-    prop.setTle(sonate);
-
-    ECICoordinate satPos, satVel;
-
-    GeodeticCoordinate obs;
-    obs.heigth = 0.275;
-    obs.latitude = convertDegreeInRadian(9.97);
-    obs.longitude = convertDegreeInRadian(49.78);
-
-
-    struct tm _gc = {0}, _fix = {0};
-    double seconds = 0;
-
-
-    //std::time_t result = std::time(nullptr);
-    //std::asctime
-
-    // TLE Datum eingeben:
-    _fix.tm_year = 2020; //sonate.getYear();
-    _fix.tm_mon = 5;
-    _fix.tm_mday = 28;
-    _fix.tm_hour = 20;
-    _fix.tm_min = 53;
-    _fix.tm_sec = 8;
+    // Mindestelevation für Kontakt
+    const double MINELEVATION = M_PI / 36;
 
     // gc wird bei jeder Iteration um 1s inkrementiert
-    for (GregorianCalendar gc = START; gc != ENDE; gc++)
+    for (GregorianCalendar gc = start; gc <= ende; gc++)
     {
-        double jd_start = computeJDFromGregCal(gc);
-
-        _gc.tm_year = gc.year;
-        _gc.tm_mon = gc.month;
-        _gc.tm_mday = gc.day;
-        _gc.tm_hour = gc.hour;
-        _gc.tm_min = gc.minute;
-        _gc.tm_sec = gc.sec;
+        double jd_current = computeJDFromGregCal(gc);
 
         //std::cout << (int)gc.day << "." << (int)gc.month << "." << (int)gc.year << " " << (int)gc.hour << ":" << (int)gc.minute << ":" << (int)gc.sec << std::endl;
-
-        
-        seconds = difftime(mktime(&_fix), mktime(&_gc));
-        //std::cout << seconds << std::endl;
+        //std::cout << (jd_current - jd_epoch)*86400 << std::endl;
 
         // Datei pro Iteration neu berechnen:
-        prop.calculatePositionAndVelocity(seconds, satPos, satVel);
+        prop.calculatePositionAndVelocity((jd_current - jdEpoch) * 86400.0, satPos, satVel);
 
         // Beobachter:
-        ECICoordinate obsECI = convertGeodeticToECI(obs, jd_start);
+        ECICoordinate obsECI = convertGeodeticToECI(obsPosGeod, jd_current);
 
         // Beobachtungsvektor berechnen:
-        ECICoordinate rvECI = {satPos.x - obsECI.x, satPos.y - obsECI.y, satPos.z - obsECI.z};
+        ECICoordinate rvECI;
+        rvECI.x = satPos.x - obsECI.x;
+        rvECI.y = satPos.y - obsECI.y;
+        rvECI.z = satPos.z - obsECI.z;
 
-        SEZCoordinate rvSEZ = transformECIToSEZ(rvECI, obs, jd_start);
+        SEZCoordinate rvSEZ = transformECIToSEZ(rvECI, obsPosGeod, jd_current);
 
+        double elevation = computeElevation(rvSEZ);
+        //std::cout << elevation << std::endl;
 
-        std::cout << computeElevation(rvSEZ) << std::endl;
+        //std::cout << (int)gc.hour << ":" << (int)gc.minute << ":" << (int)gc.sec << "\t" << (computeElevation(rvSEZ))*(M_PI/180.0) << std::endl;
 
-        if (!contact && SatelliteAvailable(computeElevation(rvSEZ)))
+        // elevation >= MINELEVATION
+
+        if ((condition(elevation)) && !(contact))
         {
             // In der letzten Iteration bestand noch kein Kontakt, jetzt aber schon!
             contact = true;
-            std::cout << "Contact!" << std::endl;
+            //std::cout << "Contact!" << std::endl;
+            //std::cout << (int)gc.hour << ":" << (int)gc.minute << ":" << (int)gc.sec << std::endl;
             ct.AOS(gc);
         }
-        else if (contact && !SatelliteAvailable(computeElevation(rvSEZ)))
+        else if (contact && !(condition(elevation))) // elevation < MINELEVATION
         {
             // In der letzten Iteration bestand noch Kontakt, aber jetzt nicht mehr!
             contact = false;
-            std::cout << "Contact lost!" << std::endl;
+            //std::cout << "Contact lost!" << std::endl;
             ct.LOS(gc);
         }
     }
@@ -208,31 +176,3 @@ void DetermineContactTimes(void) // Bedigungen aka Parameter noch nicht ganz gek
     mywriter.flush();
     mywriter.close();
 }
-
-/*
-    CODE UM COMPUTEGRAGCALFROMJD ZU TESTEN
-
-
-double jd; //= 2459003.5;
-
-    int year;
-    int month, day, hour, minute, sec;
-
-    std::cin >> year;
-    std::cin >> month;
-    std::cin >> day;
-    std::cin >> hour;
-    std::cin >> minute;
-    std::cin >> sec;
-
-    double calcedJD = Calendar::computeJD((uint16_t)year, (uint8_t)month, (uint8_t)day, (uint8_t)hour, (uint8_t)minute, (uint8_t)sec, 0, 0);
-    
-    std::cout.precision(15);
-    std::cout << calcedJD << std::endl;
-
-    auto t = computeGregFromJD(calcedJD);
-
-    std::cout << '\n';
-    std::cout << (int)t.day << "." << (int)t.month << "." << t.year << " " << (int)t.hour << ":" << (int)t.minute << ":" << (int)t.sec << std::endl;
-
-*/
