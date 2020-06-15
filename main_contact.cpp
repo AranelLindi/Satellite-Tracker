@@ -1,5 +1,10 @@
 #include "contact/contact_time.h"
 
+/* 
+* BERECHNET KONTAKTZEITPUNKTE MIT SATELLITEN AUF BASIS EINES TLE
+*/
+
+
 // ############### CONTACT CALCULATION: CONDITION ###############
 const double MIN_ELEVATION = M_PI / 36; // entspricht 5 Grad (gehört zur bool Funktion, deswegen nicht in Header!)
 bool checkContact(double ele)
@@ -16,7 +21,7 @@ bool checkContact(double ele)
 }
 // ##############################################################
 
-int main(void)
+int main(void) // Enthält beispielhafte Implementierung
 {
     // Beispielhafter Aufruf einer Kontaktzeitberechnung:
     // Nötig:

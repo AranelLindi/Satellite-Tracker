@@ -3,20 +3,15 @@
 #include <cstdint>  // int-defs.
 #include <iostream> // IO
 #include <fstream>  // IO
-#include <ctime> // seconds since epoch
 
 // eigener Code
-#include "cal/GregorianCalendar.h" // GregorianCalendar-Objekt
-#include "contact_time.h"      // überladene Operatoren für GregorianCalendar
+#include "calendar/GregorianCalendar.h" // GregorianCalendar-Objekt
+#include "Orbitpropagation/coordinates/geocoordinates.h" // Koordinaten-Objekte
+#include "Orbitpropagation/TLEinterpreter/tleinterpreter.h" // TLE einlesen
+#include "calc/sat_calculation.h"
 
-#include "Orbitpropagation/coordinates/geocoordinates.h"
 
-double convertRadInDegrees(double rad)
-{
-    return rad * 180 / M_PI;
-}
-
-int main(void)
+int main(void) // Enthält Beispiel zur Implementierung
 {
     const GregorianCalendar START = {2020, 5, 14, 9, 32, 0};
     const GregorianCalendar ENDE = {2020, 6, 29, 14, 32, 0};
@@ -60,10 +55,10 @@ int main(void)
         double SlantRange = computeSlantRange(sz);
 
         // Azimuth
-        double azimuth = convertRadInDegrees(computeAzimuth(sz));
+        double azimuth = rad2deg(computeAzimuth(sz));
 
         // Elevation
-        double elevation = convertRadInDegrees(computeElevation(sz));
+        double elevation = rad2deg(computeElevation(sz));
 
         // Anschließend alles in den Filestream schreiben:
         mywriter.precision(15);
