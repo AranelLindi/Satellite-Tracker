@@ -12,11 +12,11 @@ Berechnet Kontaktzeitpunkte/-verluste eines Satelliten über einen gegebenen Zei
 
 ----------------------------------------------------------
 
-### **main_calculation.cpp**###
+### **main_calculation.cpp** ###
 Beispielhafte Implementierung der Berechnung von sat_calculation.
 
-### **main_contact.cpp**###
+### **main_contact.cpp** ###
 Beispielhafte Implementierung der Bestimmung von Kontaktzeiträumen via contact_time.
 
-### **main_position.cpp**###
+### **main_position.cpp** ###
 Berechnet beispielhaft die Koordinaten der Flugbahn eines Satelliten.
