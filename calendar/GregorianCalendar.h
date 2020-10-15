@@ -33,7 +33,7 @@ struct GregorianCalendar
 
     // Zuweisung:
     GregorianCalendar &operator+=(const uint64_t &_i) noexcept; // noexcept vielleicht etwas gewagt... ausgeschlossen können Fehler jedensfalls nicht zu 100%
-    GregorianCalendar& operator=(const GregorianCalendar& gregCal2) noexcept;
+    GregorianCalendar &operator=(const GregorianCalendar &gregCal2) noexcept;
 
     // Vergleichsoperatoren:
     bool operator!=(const GregorianCalendar &gregCal2) const;

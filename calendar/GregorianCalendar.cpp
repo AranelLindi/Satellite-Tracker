@@ -7,7 +7,8 @@ double computeJDFromGregCal(const GregorianCalendar &gregCal)
     return Calendar::computeJD(gregCal.year, gregCal.month, gregCal.day, gregCal.hour, gregCal.minute, gregCal.sec, 0, 0);
 }
 
-GregorianCalendar& GregorianCalendar::operator=(const GregorianCalendar& gregCal2) noexcept {
+GregorianCalendar &GregorianCalendar::operator=(const GregorianCalendar &gregCal2) noexcept
+{
     this->year = gregCal2.year;
     this->month = gregCal2.month;
     this->day = gregCal2.day;
