@@ -5,7 +5,7 @@ project(SatelliteTracking) # Project Name
 set(CMAKE_CXX_STANDART 17) # Cpp17 Standard
 
 add_executable(SatelliteTracking 
-                main_position.cpp 
+                main_contact.cpp 
                 calendar/GregorianCalendar.cpp 
                 contact/contact_time.cpp 
                 calc/sat_calculation.cpp 

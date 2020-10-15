@@ -31,19 +31,18 @@ SEZCoordinate transformECIToSEZ(const ECICoordinate &rObsSat, const GeodeticCoor
 
     return sz;*/
 
-    double sinPhi = sin(obs.latitude);
-	double cosPhi = cos(obs.latitude);
+    const double sinPhi{sin(obs.latitude)};
+    double cosPhi{cos(obs.latitude)};
 
-	double gmst = Calendar::computeGMST(jd);
-	double sinTheta = sin(obs.longitude + gmst);
-	double cosTheta = cos(obs.longitude + gmst);
+    const double gmst{Calendar::computeGMST(jd)};
+    const double sinTheta{sin(obs.longitude + gmst)};
+    const double cosTheta{cos(obs.longitude + gmst)};
 
-	SEZCoordinate sezCoord;
-	sezCoord.rS = sinPhi * cosTheta * rObsSat.x + sinPhi * sinTheta * rObsSat.y - cosPhi * rObsSat.z;
-	sezCoord.rE = -sinTheta * rObsSat.x + cosTheta * rObsSat.y;
-	sezCoord.rZ = cosPhi * cosTheta * rObsSat.x + cosPhi * sinTheta * rObsSat.y + sinPhi * rObsSat.z;
+    SEZCoordinate sezCoord(sinPhi * cosTheta * rObsSat.x + sinPhi * sinTheta * rObsSat.y - cosPhi * rObsSat.z,
+                           -sinTheta * rObsSat.x + cosTheta * rObsSat.y,
+                           cosPhi * cosTheta * rObsSat.x + cosPhi * sinTheta * rObsSat.y + sinPhi * rObsSat.z);
 
-	return sezCoord;
+    return sezCoord;
 }
 
 ECICoordinate convertGeodeticToECI(const GeodeticCoordinate &geodCoord, double jd)
@@ -74,26 +73,26 @@ ECICoordinate convertGeodeticToECI(const GeodeticCoordinate &geodCoord, double j
 
     return eci;*/
 
-    static const double Re = 6378.137;
-	static const double f = 1.0 / 298.26;
-	
-	double sinPhi = sin(geodCoord.latitude);
-	double cosPhi = cos(geodCoord.latitude);
+    static const float Re{6378.137f};
+    static const float f{1.0 / 298.26};
 
-	double gmst = Calendar::computeGMST(jd);
-	double sinTheta = sin(geodCoord.longitude + gmst);
-	double cosTheta = cos(geodCoord.longitude + gmst);
+    const double sinPhi{sin(geodCoord.latitude)};
+    const double cosPhi{cos(geodCoord.latitude)};
 
-	double C = 1 / sqrt(1 + f * (f - 2) * sinPhi * sinPhi);
-	double S = (1 - f) * (1 - f) * C;
+    const double gmst{Calendar::computeGMST(jd)};
+    const double sinTheta{sin(geodCoord.longitude + gmst)};
+    const double cosTheta{cos(geodCoord.longitude + gmst)};
 
-	// Include height of geodetic coordinate into equations from RFBA_4.pdf, S.9
-	ECICoordinate coord;
-	coord.x = (Re * C + geodCoord.height) * cosPhi * cosTheta;
-	coord.y = (Re * C + geodCoord.height) * cosPhi * sinTheta;
-	coord.z = (Re * S + geodCoord.height) * sinPhi;
+    const double C{1 / sqrt(1 + f * (f - 2) * sinPhi * sinPhi)};
+    const double S{(1 - f) * (1 - f) * C};
 
-	return coord;
+    // Include height of geodetic coordinate into equations from RFBA_4.pdf, S.9
+    ECICoordinate coord;
+    coord.x = (Re * C + geodCoord.height) * cosPhi * cosTheta;
+    coord.y = (Re * C + geodCoord.height) * cosPhi * sinTheta;
+    coord.z = (Re * S + geodCoord.height) * sinPhi;
+
+    return coord;
 }
 
 double computeSlantRange(const SEZCoordinate &sezCoord)
@@ -110,7 +109,7 @@ double computeAzimuth(const SEZCoordinate &sezCoord)
 
     //if (sezCoord.rS == 0)
     //    return 0;                                   // eventuelle Division durch 0 abfangen
-    double azimuth = atan2(sezCoord.rE, -sezCoord.rS); // arctan(x)
+    double azimuth{atan2(sezCoord.rE, -sezCoord.rS)}; // arctan(x)
 
     if (azimuth < 0)
         azimuth += (2 * M_PI);

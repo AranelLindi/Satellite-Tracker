@@ -17,8 +17,8 @@ int main(void) // Enthält Beispiel zur Implementierung
     const GregorianCalendar ENDE = {2020, 6, 29, 14, 32, 0};
 
     // TLE laden:
-    auto _tle = readTlesFromFile("SONATE.txt");
-    auto sonate = _tle.at(44400);
+    const auto _tle = readTlesFromFile("SONATE.txt");
+    const auto sonate = _tle.at(44400);
 
     // und SGP4 Calc. übergeben:
     SGP4Propagator prop;
@@ -28,14 +28,14 @@ int main(void) // Enthält Beispiel zur Implementierung
     std::ofstream mywriter("Ausgabe32.txt");
 
     // WICHTIG! INKREMENT AUF 10s GEÄNDERT!
-    for (GregorianCalendar i = START; i != ENDE; i+= 3600)
+    for (GregorianCalendar i {START}; i != ENDE; i+= 3600)
     {
         mywriter << (int)i.day << "." << (int)i.month << "." << (int)i.year << " " << (int)i.hour << ":" << (int)i.minute << ":" << (int)i.sec << '\n';
 
         // für jede Iteration die Werte berechnen:
 
         // julian day number
-        double jd = computeJDFromGregCal(i);
+        const double jd {computeJDFromGregCal(i)};
 
         ECICoordinate posSat, posStation;
 
@@ -43,22 +43,22 @@ int main(void) // Enthält Beispiel zur Implementierung
 
         CoordinateConvertion cc;
         // ECI Position Satellit
-        GeodeticCoordinate gcsat = cc.convertECItoGeodetic(posSat, jd);
+        const GeodeticCoordinate gcsat {cc.convertECItoGeodetic(posSat, jd)};
 
         // ECI Position Bodensation ( oder gecentric ?? )
-        GeodeticCoordinate gcstation = cc.convertECItoGeodetic(posStation, jd);
+        const GeodeticCoordinate gcstation {cc.convertECItoGeodetic(posStation, jd)};
 
         // Koordinaten topozentrisches Horizontsystem
-        SEZCoordinate sz = transformECIToSEZ(posSat, gcsat, jd);
+        const SEZCoordinate sz {transformECIToSEZ(posSat, gcsat, jd)};
 
         // Schrägentfernung
-        double SlantRange = computeSlantRange(sz);
+        const double SlantRange {computeSlantRange(sz)};
 
         // Azimuth
-        double azimuth = rad2deg(computeAzimuth(sz));
+        const double azimuth {rad2deg(computeAzimuth(sz))};
 
         // Elevation
-        double elevation = rad2deg(computeElevation(sz));
+        const double elevation {rad2deg(computeElevation(sz))};
 
         // Anschließend alles in den Filestream schreiben:
         mywriter.precision(15);
