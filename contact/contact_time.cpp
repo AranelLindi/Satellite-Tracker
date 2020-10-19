@@ -2,7 +2,7 @@
 
 #define __abstand__ std::setfill('0') << std::setw(2)
 
-GregorianCalendar computeGragCalFromJD(double jd)
+GregorianCalendar computeGragCalFromJD(double jd) noexcept // thematisch gesehen, gehört das hier nicht rein! Besseren Platz dafür suchen!
 {
     // Quelle: http://articles.adsabs.harvard.edu//full/1984QJRAS..25...53H/0000055.000.html
     // (Teilweise modifiziert, weil Tests nicht das richtige Ergebnis lieferten)
@@ -25,8 +25,8 @@ GregorianCalendar computeGragCalFromJD(double jd)
     // **************************************************
 
     // ***************** STUNDE/MINUTE/SEKUNDE *****************
-    //  Uhrzeit wird unabhängig von oberen Variablen berechnet,
-    //  es wird lediglich der Fractional Part von jd für die Be-
+    //  Uhrzeit wird unabhängig von oberen Variablen berechnet.
+    //  Es wird lediglich der Fractional Part von jd für die Be-
     //  rechnungen extrahiert und verwendet, da in der Datums-
     //  berechnung (oben) Workarounds vorgenommen wurden.
 
@@ -81,26 +81,26 @@ ContactTimes::ContactTimes(std::ofstream &writer)
     writer << "\033[1m\033[31mAOS (Kontaktaufnahme)\tLOS (Kontaktverlust)\tDUR (Dauer)\033[0m" << std::endl;
 }
 
-void ContactTimes::AOS(const GregorianCalendar &gc)
+void ContactTimes::AOS(const GregorianCalendar &gc) noexcept
 {
     this->begin = gc;                                                                                                                                                                                                                                       // Zeitpunkt merken, an dem Kontakt zustanden gekommen ist
     *(this->_writer) << std::fixed << __abstand__ << (int)gc.day << "." << __abstand__ << (int)gc.month << "." << (int)gc.year << " " << __abstand__ << (int)gc.hour << ":" << __abstand__ << (int)gc.minute << ":" << __abstand__ << (int)gc.sec << " ; "; // erst bei vollständigem Datensatz (LOS) flushen!
 }
 
-void ContactTimes::LOS(const GregorianCalendar &gc)
+void ContactTimes::LOS(const GregorianCalendar &gc) noexcept
 {
     // Differenz zwischen AOS und LOS ausrechnen:
     const int32_t diff{gc - this->begin}; // Sekunden
 
-    const uint32_t minutes{diff / 60};      // Enthält Ganzzahl der Anzahl der Minuten
-    const uint8_t sec{diff - minutes * 60}; // Enthält Sekunden
+    const uint32_t minutes{(unsigned)(diff / 60)}; // Enthält Ganzzahl der Anzahl der Minuten
+    const uint8_t sec{diff - minutes * 60};        // Enthält Sekunden
 
     *(this->_writer) << std::fixed;
     *(this->_writer) << __abstand__ << (int)gc.day << "." << __abstand__ << (int)gc.month << "." << (int)gc.year << " " << __abstand__ << (int)gc.hour << ":" << __abstand__ << (int)gc.minute << ":" << __abstand__ << (int)gc.sec;
     *(this->_writer) << " ; " << minutes << ":" << (int)sec << std::endl;
 }
 
-void DetermineContactTimes(const std::string &filename, Tle &tle, const GregorianCalendar &start, const GregorianCalendar &ende, float observer_heigth, float observer_latitude_degree, float observer_longitude_degree, bool (*condition)(double)) // Bedigungen aka Parameter noch nicht ganz geklärt, deswegen hier 'void'. Sobald geklärt, hier so ersetzen, dass Funktion theoretisch auch für andere Satelliten ausgeführt werden könnte.
+void DetermineContactTimes(const std::string &filename, const Tle &tle, const GregorianCalendar &start, const GregorianCalendar &ende, float observer_heigth, float observer_latitude_degree, float observer_longitude_degree, bool (*condition)(double)) // Bedigungen aka Parameter noch nicht ganz geklärt, deswegen hier 'void'. Sobald geklärt, hier so ersetzen, dass Funktion theoretisch auch für andere Satelliten ausgeführt werden könnte.
 {
     SGP4Propagator prop;
     prop.setTle(tle);
@@ -146,7 +146,7 @@ void DetermineContactTimes(const std::string &filename, Tle &tle, const Gregoria
         rvECI.y = satPos.y - obsECI.y;
         rvECI.z = satPos.z - obsECI.z;
 
-        SEZCoordinate rvSEZ{transformECIToSEZ(rvECI, obsPosGeod, jd_current)};
+        const SEZCoordinate rvSEZ{transformECIToSEZ(rvECI, obsPosGeod, jd_current)};
 
         const double elevation{computeElevation(rvSEZ)};
         //std::cout << elevation << std::endl;

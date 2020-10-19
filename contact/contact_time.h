@@ -24,13 +24,13 @@ public:
      * Markiert den Zeitpunkt einer aufgebauten Verbindung zu einem Satelliten.
      * @param  {GregorianCalendar} gc : Zeitpunkt Kontakt
      */
-    void AOS(const GregorianCalendar &gc);
+    void AOS(const GregorianCalendar &gc) noexcept;
 
     /**
      * Markiert den Zeitpunkt einer verloreren Verbindung zu einem Satelliten.
      * @param  {GregorianCalendar} gc : Zeitpunkt Verlust
      */
-    void LOS(const GregorianCalendar &gc);
+    void LOS(const GregorianCalendar &gc) noexcept;
 
     // Operator überladen um zwei GregorianCalendar-Objekte voneinander subtrahieren zu können.
     // Liefert die Anzahl Sekunden Differenz der beiden Objekte
@@ -47,4 +47,4 @@ public:
  * @param  {float} observer_longitude_degree : Längengrad Beobachter (Bodenstation)
  * @param  {bool(*)(double)} condition       : Funktionszeiger auf Funktion die Kontaktbedingung prüft (seperat implementieren!)
  */
-void DetermineContactTimes(const std::string &filename, Tle &tle, const GregorianCalendar &start, const GregorianCalendar &ende, float observer_heigth, float observer_latitude_degree, float observer_longitude_degree, bool (*condition)(double));
+void DetermineContactTimes(const std::string &filename, const Tle &tle, const GregorianCalendar &start, const GregorianCalendar &ende, float observer_heigth, float observer_latitude_degree, float observer_longitude_degree, bool (*condition)(double));

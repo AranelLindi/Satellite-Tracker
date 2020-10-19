@@ -7,7 +7,7 @@
 
 // ############### CONTACT CALCULATION: CONDITION ###############
 const constexpr double MIN_ELEVATION = M_PI / 36; // entspricht 5 Grad (gehört zur bool Funktion, deswegen nicht in Header!)
-bool checkContact(double ele)
+bool checkContact(double ele) noexcept
 {
     if (ele >= MIN_ELEVATION)
     {
@@ -30,7 +30,7 @@ int main(void) // Enthält beispielhafte Implementierung
     // - Start- und Endzeitpunkt
 
     const auto tles {readTlesFromFile("ISS.txt")};
-    auto sonate {tles.at(25544)}; // select Sonate
+    const auto sonate {tles.at(25544)}; // select Sonate
 
     const GregorianCalendar ENDE {2020, 6, 16, 0, 0, 0};
     const GregorianCalendar START {2020, 6, 15, 0, 0, 0};

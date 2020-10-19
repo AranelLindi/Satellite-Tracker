@@ -22,34 +22,34 @@ struct GregorianCalendar
     int8_t sec;    // second [0, 60)
 
     // Konstruktor:
-    GregorianCalendar() {}
-    GregorianCalendar(int16_t _year, int8_t _month, int8_t _day, int8_t _hour, int8_t _minute, int8_t _sec) : year(_year), month(_month), day(_day), hour(_hour), minute(_minute), sec(_sec) {}
+    GregorianCalendar() noexcept {}
+    GregorianCalendar(int16_t _year, int8_t _month, int8_t _day, int8_t _hour, int8_t _minute, int8_t _sec) noexcept : year(_year), month(_month), day(_day), hour(_hour), minute(_minute), sec(_sec) {}
 
     // Inkrementieren:
     GregorianCalendar &operator++(int) noexcept; // s. +=-Beschreibung
 
     // Arithmetik:
-    int64_t operator-(const GregorianCalendar &gregCal2) const;
+    int64_t operator-(const GregorianCalendar &gregCal2) const noexcept; // verwendet JD, deshalb noexcept möglich!
 
     // Zuweisung:
     GregorianCalendar &operator+=(const uint64_t &_i) noexcept; // noexcept vielleicht etwas gewagt... ausgeschlossen können Fehler jedensfalls nicht zu 100%
     GregorianCalendar &operator=(const GregorianCalendar &gregCal2) noexcept;
 
     // Vergleichsoperatoren:
-    bool operator!=(const GregorianCalendar &gregCal2) const;
-    bool operator==(const GregorianCalendar &gregCal2) const;
-    bool operator<(const GregorianCalendar &gregCal2) const;
-    bool operator>(const GregorianCalendar &gregCal2) const;
-    bool operator<=(const GregorianCalendar &gregCal2) const;
-    bool operator>=(const GregorianCalendar &gregCal2) const;
+    bool operator!=(const GregorianCalendar &gregCal2) const noexcept;
+    bool operator==(const GregorianCalendar &gregCal2) const noexcept;
+    bool operator<(const GregorianCalendar &gregCal2) const noexcept;
+    bool operator>(const GregorianCalendar &gregCal2) const noexcept;
+    bool operator<=(const GregorianCalendar &gregCal2) const noexcept;
+    bool operator>=(const GregorianCalendar &gregCal2) const noexcept;
     /* auto operator<=>(const GregorianCalendar& gregCal2) const; */
 };
 
 // Verwendet entsprechende Methode aus Orbitpropagation/calendar um gregorianisches Datum in JDF zu überführen.
-double computeJDFromGregCal(const GregorianCalendar &gregCal);
+double computeJDFromGregCal(const GregorianCalendar &gregCal) noexcept;
 
 // Prüft ob das übergebene Jahr ein Schaltjahr ist (true) oder nicht (false)
-inline bool checkLeapYear(const uint16_t year)
+inline bool checkLeapYear(const uint16_t year) noexcept
 {
     return ((year % 4 == 0) && (!(year % 100 == 0) | (year % 400 == 0)));
 }

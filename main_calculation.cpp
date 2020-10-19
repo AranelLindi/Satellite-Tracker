@@ -5,11 +5,10 @@
 #include <fstream>  // IO
 
 // eigener Code
-#include "calendar/GregorianCalendar.h" // GregorianCalendar-Objekt
-#include "Orbitpropagation/coordinates/geocoordinates.h" // Koordinaten-Objekte
+#include "calendar/GregorianCalendar.h"                     // GregorianCalendar-Objekt
+#include "Orbitpropagation/coordinates/geocoordinates.h"    // Koordinaten-Objekte
 #include "Orbitpropagation/TLEinterpreter/tleinterpreter.h" // TLE einlesen
 #include "calc/sat_calculation.h"
-
 
 int main(void) // Enthält Beispiel zur Implementierung
 {
@@ -28,14 +27,14 @@ int main(void) // Enthält Beispiel zur Implementierung
     std::ofstream mywriter("Ausgabe32.txt");
 
     // WICHTIG! INKREMENT AUF 10s GEÄNDERT!
-    for (GregorianCalendar i {START}; i != ENDE; i+= 3600)
+    for (GregorianCalendar i{START}; i != ENDE; i += 3600)
     {
         mywriter << (int)i.day << "." << (int)i.month << "." << (int)i.year << " " << (int)i.hour << ":" << (int)i.minute << ":" << (int)i.sec << '\n';
 
         // für jede Iteration die Werte berechnen:
 
         // julian day number
-        const double jd {computeJDFromGregCal(i)};
+        const double jd{computeJDFromGregCal(i)};
 
         ECICoordinate posSat, posStation;
 
@@ -43,22 +42,22 @@ int main(void) // Enthält Beispiel zur Implementierung
 
         CoordinateConvertion cc;
         // ECI Position Satellit
-        const GeodeticCoordinate gcsat {cc.convertECItoGeodetic(posSat, jd)};
+        const GeodeticCoordinate gcsat{cc.convertECItoGeodetic(posSat, jd)};
 
         // ECI Position Bodensation ( oder gecentric ?? )
-        const GeodeticCoordinate gcstation {cc.convertECItoGeodetic(posStation, jd)};
+        const GeodeticCoordinate gcstation{cc.convertECItoGeodetic(posStation, jd)};
 
         // Koordinaten topozentrisches Horizontsystem
-        const SEZCoordinate sz {transformECIToSEZ(posSat, gcsat, jd)};
+        const SEZCoordinate sz{transformECIToSEZ(posSat, gcsat, jd)};
 
         // Schrägentfernung
-        const double SlantRange {computeSlantRange(sz)};
+        const double SlantRange{computeSlantRange(sz)};
 
         // Azimuth
-        const double azimuth {rad2deg(computeAzimuth(sz))};
+        const double azimuth{rad2deg(computeAzimuth(sz))};
 
         // Elevation
-        const double elevation {rad2deg(computeElevation(sz))};
+        const double elevation{rad2deg(computeElevation(sz))};
 
         // Anschließend alles in den Filestream schreiben:
         mywriter.precision(15);
@@ -68,11 +67,11 @@ int main(void) // Enthält Beispiel zur Implementierung
             << posStation.x << '|' << posStation.y << '|' << posStation.z << ';'
             << sz.rE << '|' << sz.rS << '|' << sz.rZ << ';'
             << SlantRange << ';'
-            << azimuth << ';' 
+            << azimuth << ';'
             << elevation << '\n';
     }
 
     mywriter << std::flush;
 
-    mywriter.close();      
+    mywriter.close();
 }

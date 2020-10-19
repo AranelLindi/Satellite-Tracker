@@ -1,6 +1,6 @@
 #include "sat_calculation.h"
 
-SEZCoordinate transformECIToSEZ(const ECICoordinate &rObsSat, const GeodeticCoordinate &obs, double jd)
+SEZCoordinate transformECIToSEZ(const ECICoordinate &rObsSat, const GeodeticCoordinate &obs, double jd) noexcept
 {
     /*const double gmst = Calendar::computeGMST(jd) + obs.longitude; // Sternzeit des Beobachters hängt ab vom Längengrad!
 
@@ -32,20 +32,18 @@ SEZCoordinate transformECIToSEZ(const ECICoordinate &rObsSat, const GeodeticCoor
     return sz;*/
 
     const double sinPhi{sin(obs.latitude)};
-    double cosPhi{cos(obs.latitude)};
+    const double cosPhi{cos(obs.latitude)};
 
     const double gmst{Calendar::computeGMST(jd)};
     const double sinTheta{sin(obs.longitude + gmst)};
     const double cosTheta{cos(obs.longitude + gmst)};
 
-    SEZCoordinate sezCoord(sinPhi * cosTheta * rObsSat.x + sinPhi * sinTheta * rObsSat.y - cosPhi * rObsSat.z,
-                           -sinTheta * rObsSat.x + cosTheta * rObsSat.y,
-                           cosPhi * cosTheta * rObsSat.x + cosPhi * sinTheta * rObsSat.y + sinPhi * rObsSat.z);
-
-    return sezCoord;
+    return SEZCoordinate(sinPhi * cosTheta * rObsSat.x + sinPhi * sinTheta * rObsSat.y - cosPhi * rObsSat.z,
+                         -sinTheta * rObsSat.x + cosTheta * rObsSat.y,
+                         cosPhi * cosTheta * rObsSat.x + cosPhi * sinTheta * rObsSat.y + sinPhi * rObsSat.z);
 }
 
-ECICoordinate convertGeodeticToECI(const GeodeticCoordinate &geodCoord, double jd)
+ECICoordinate convertGeodeticToECI(const GeodeticCoordinate &geodCoord, double jd) noexcept
 {
     /*// große Halbachse:
     static const float a = 6378137.0 / 1000; // [km]
@@ -73,8 +71,8 @@ ECICoordinate convertGeodeticToECI(const GeodeticCoordinate &geodCoord, double j
 
     return eci;*/
 
-    static const float Re{6378.137f};
-    static const float f{1.0 / 298.26};
+    const float Re{6378.137f};
+    const float f{1.0 / 298.26};
 
     const double sinPhi{sin(geodCoord.latitude)};
     const double cosPhi{cos(geodCoord.latitude)};
@@ -95,29 +93,26 @@ ECICoordinate convertGeodeticToECI(const GeodeticCoordinate &geodCoord, double j
     return coord;
 }
 
-double computeSlantRange(const SEZCoordinate &sezCoord)
+double computeSlantRange(const SEZCoordinate &sezCoord) noexcept
 {
     const auto sq = [](double i) -> double { return (i * i); };
 
     return sqrt(sq(sezCoord.rS) + sq(sezCoord.rE) + sq(sezCoord.rZ));
 }
 
-double computeAzimuth(const SEZCoordinate &sezCoord)
+double computeAzimuth(const SEZCoordinate &sezCoord) noexcept
 {
     // von Norden im Uhrzeigersinn positiv, d.h. im Norden beträgt
     // der Azimut 0 Grad. Wertebereich liegt im Intervall [0, 2pi)
 
     //if (sezCoord.rS == 0)
     //    return 0;                                   // eventuelle Division durch 0 abfangen
-    double azimuth{atan2(sezCoord.rE, -sezCoord.rS)}; // arctan(x)
+    const double azimuth{atan2(sezCoord.rE, -sezCoord.rS)}; // arctan(x)
 
-    if (azimuth < 0)
-        azimuth += (2 * M_PI);
-
-    return azimuth;
+    return ((azimuth < 0) ? (azimuth + (2 * M_PI)) : (azimuth));
 }
 
-double computeElevation(const SEZCoordinate &sezCoord)
+double computeElevation(const SEZCoordinate &sezCoord) noexcept
 {
     // Elevationswinkel von 0 Grad entspricht Horizont und Winkel von 90 Grad
     // dem Zenit. Wertebereich liegt im Intervall [-pi/2, pi/2]

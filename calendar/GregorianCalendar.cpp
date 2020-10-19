@@ -1,6 +1,6 @@
 #include "GregorianCalendar.h"
 
-double computeJDFromGregCal(const GregorianCalendar &gregCal)
+double computeJDFromGregCal(const GregorianCalendar &gregCal) noexcept
 {
     // Benutzt die entsprechende Funktion aus Orbitpropagation 'static double computeJD(int16_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t minute, uint8_t second, uint8_t milisecond, uint8_t microsecond);'
 
@@ -263,7 +263,7 @@ GregorianCalendar &GregorianCalendar::operator++(int) noexcept
     //return temp; // WC: 8 Vergleiche: O(1)
 }
 
-int64_t GregorianCalendar::operator-(const GregorianCalendar &gregCal2) const
+int64_t GregorianCalendar::operator-(const GregorianCalendar &gregCal2) const noexcept
 {
     // Nutzt die vorhanden Funktionen in Orbitpropagation/calendar/calendar.h um gregCal1 und gregCal2 in julianischen Kalendar zu überführen und dann ihre
     // Differenz zu berechnen.
@@ -274,7 +274,7 @@ int64_t GregorianCalendar::operator-(const GregorianCalendar &gregCal2) const
     return (jd1 - jd2) * (60 * 60 * 24); // Differenz mal Sekunden pro Tag, da JDN in Tage somit bleiben Sekunden als Einheit stehen
 }
 
-bool GregorianCalendar::operator!=(const GregorianCalendar &gregCal2) const
+bool GregorianCalendar::operator!=(const GregorianCalendar &gregCal2) const noexcept
 {
     return !((this->year == gregCal2.year) &&
              (this->month == gregCal2.month) &&
@@ -286,7 +286,7 @@ bool GregorianCalendar::operator!=(const GregorianCalendar &gregCal2) const
     // WC: 7 Vergleiche: (1) // inkl. Negation
 }
 
-bool GregorianCalendar::operator==(const GregorianCalendar &gregCal2) const
+bool GregorianCalendar::operator==(const GregorianCalendar &gregCal2) const noexcept
 {
     return ((this->year == gregCal2.year) &&
             (this->month == gregCal2.month) &&
@@ -300,7 +300,7 @@ bool GregorianCalendar::operator==(const GregorianCalendar &gregCal2) const
     //return !(gregCal1 != gregCal2); // geht das so auch? effizient?
 }
 
-bool GregorianCalendar::operator<(const GregorianCalendar &gregCal2) const
+bool GregorianCalendar::operator<(const GregorianCalendar &gregCal2) const noexcept
 {
     // Definition: Ein Datum ist kleiner relativ zu einem Anderen, wenn es einen früheren Zeitraum repräsentiert.
 
@@ -334,7 +334,7 @@ bool GregorianCalendar::operator<(const GregorianCalendar &gregCal2) const
     return (Y || (Y_ & (M || (M_ & (D || (D_ & (h || (h_ & (m || (m_ & s)))))))))); // WC: 21 Vergleiche: O(1)
 }
 
-bool GregorianCalendar::operator>(const GregorianCalendar &gregCal2) const
+bool GregorianCalendar::operator>(const GregorianCalendar &gregCal2) const noexcept
 {
     // Definition: Ein Datum ist größer relativ zu einem anderen, wenn es einen späteren Zeitpunkt repräsentiert.
 
@@ -368,7 +368,7 @@ bool GregorianCalendar::operator>(const GregorianCalendar &gregCal2) const
     return (Y || (Y_ & (M || (M_ & (D || (D_ & (h || (h_ & (m || (m_ & s)))))))))); // WC: 21 Vergleiche: O(1)
 }
 
-bool GregorianCalendar::operator<=(const GregorianCalendar &gregCal2) const
+bool GregorianCalendar::operator<=(const GregorianCalendar &gregCal2) const noexcept
 {
     // Definition: Ein Datum ist kleiner gleich relativ zu einem anderen, wenn es einen früheren oder gleichen Zeitpunkt repräsentiert.
 
@@ -404,7 +404,7 @@ bool GregorianCalendar::operator<=(const GregorianCalendar &gregCal2) const
     return (Y || (Y_ & (M || (M_ & (D || (D_ & (h || (h_ & (m || (m_ & s_dot)))))))))); // WC: 22 Vergleiche: O(1)
 }
 
-bool GregorianCalendar::operator>=(const GregorianCalendar &gregCal2) const
+bool GregorianCalendar::operator>=(const GregorianCalendar &gregCal2) const noexcept
 {
     // Definition: Ein Datum ist größer gleich relativ zu einem Anderen, wenn es einen früheren oder gleichen Zeitraum repräsentiert.
 
